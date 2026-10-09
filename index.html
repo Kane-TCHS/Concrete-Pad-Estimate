@@ -1,0 +1,790 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Estimating a Concrete Pad</title>
+<style>
+  :root{
+    --bg:#f5f4f0; --paper:#ffffff; --ink:#1f2328; --muted:#5b616b; --line:#d9d6ce;
+    --accent:#c2410c; --accent-soft:#fff1e8;
+    --rust:#b4532a; --steel:#2f6f9f;
+    --good:#1f7a3f; --good-soft:#e8f5ec; --bad:#b42318; --bad-soft:#fdecea;
+    --concrete:#e4e1da; --concrete-edge:#8a867d;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font:17px/1.6 system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+  header.top{position:sticky;top:0;z-index:10;background:var(--ink);color:#fff}
+  .top-inner{max-width:820px;margin:0 auto;padding:10px 16px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+  .top-title{font-weight:700;font-size:15px;letter-spacing:.2px;white-space:nowrap}
+  .top-title span{opacity:.65;font-weight:500}
+  nav.parts{display:flex;gap:6px;flex-wrap:wrap;margin-left:auto}
+  nav.parts a{display:inline-flex;align-items:center;justify-content:center;min-width:30px;height:30px;padding:0 8px;border-radius:6px;
+    font-size:13px;font-weight:700;text-decoration:none;color:#fff;background:#3a4049}
+  nav.parts a.locked{opacity:.35;pointer-events:none}
+  nav.parts a.done{background:var(--good)}
+  .progress{height:4px;background:#3a4049}
+  .progress div{height:100%;width:0;background:var(--accent);transition:width .3s}
+
+  main{max-width:820px;margin:0 auto;padding:24px 16px 80px}
+  section.part{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:28px 28px 24px;margin-bottom:24px;scroll-margin-top:70px}
+  @media (max-width:560px){ section.part{padding:20px 16px} body{font-size:16px} }
+  .kicker{font-size:13px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:1px;margin:0}
+  h2{margin:2px 0 14px;font-size:28px;line-height:1.2}
+  h3{margin:26px 0 8px;font-size:19px}
+  p{margin:10px 0}
+  ul{margin:8px 0;padding-left:22px}
+  .lead{font-size:18px}
+  .formula{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;background:#f1efe9;border-radius:6px;padding:8px 12px;display:inline-block;margin:6px 0;font-size:15.5px}
+  .price{display:inline-block;background:#f1efe9;border:1px dashed #b8b3a7;border-radius:6px;padding:4px 10px;font-size:15px;color:#3d4249}
+  .price b{color:var(--ink)}
+  .callout{border-left:4px solid var(--steel);background:#eef4f9;border-radius:0 8px 8px 0;padding:12px 16px;margin:16px 0}
+  .callout.think{border-color:var(--accent);background:var(--accent-soft)}
+  .callout p:first-child{margin-top:0} .callout p:last-child{margin-bottom:0}
+  .rules{counter-reset:r;list-style:none;padding:0}
+  .rules li{counter-increment:r;position:relative;padding-left:40px;margin:10px 0}
+  .rules li::before{content:counter(r);position:absolute;left:0;top:1px;width:28px;height:28px;border-radius:50%;
+    background:var(--ink);color:#fff;font-weight:700;font-size:14px;display:flex;align-items:center;justify-content:center}
+  figure{margin:16px 0;text-align:center}
+  figure svg{max-width:100%;height:auto}
+  figcaption{font-size:14px;color:var(--muted);margin-top:4px}
+  .twofig{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  @media (max-width:560px){ .twofig{grid-template-columns:1fr} }
+
+  table.est{width:100%;border-collapse:collapse;font-size:15px;margin:12px 0}
+  table.est th,table.est td{border:1px solid var(--line);padding:7px 9px;text-align:left}
+  table.est th{background:#f1efe9}
+  table.est td.num{text-align:right;white-space:nowrap}
+  table.est tr.total td{font-weight:700;background:#faf9f6}
+  .tablewrap{overflow-x:auto}
+
+  /* checks */
+  .check{border:2px solid var(--ink);border-radius:10px;padding:14px 16px;margin:18px 0;background:#fff}
+  .check .tag{font-size:12px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:var(--accent)}
+  .check .q{margin:4px 0 10px;font-weight:600}
+  .check .row{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+  .check .field{display:inline-flex;align-items:center;gap:6px}
+  .check input{font:inherit;width:120px;padding:7px 10px;border:1.5px solid #9aa0a8;border-radius:7px;background:#fff}
+  .check input:focus{outline:2px solid var(--steel);outline-offset:1px}
+  .check .unit{color:var(--muted);font-size:15px}
+  .check .sep{color:var(--muted)}
+  button{font:inherit;font-weight:700;border:0;border-radius:7px;padding:8px 16px;cursor:pointer;background:var(--ink);color:#fff}
+  button.ghost{background:transparent;color:var(--steel);text-decoration:underline;padding:8px 4px}
+  button.big{background:var(--accent);font-size:17px;padding:11px 22px}
+  button:disabled{opacity:.5;cursor:default}
+  .fb{margin-top:10px;padding:9px 12px;border-radius:7px;display:none;font-size:15.5px}
+  .fb.show{display:block}
+  .fb.good{background:var(--good-soft);color:var(--good)}
+  .fb.bad{background:var(--bad-soft);color:var(--bad)}
+  .fb.shown{background:#f1efe9;color:var(--ink)}
+  .check.solved{border-color:var(--good)}
+  .check.solved .tag{color:var(--good)}
+  .check.solved input{background:var(--good-soft);border-color:var(--good)}
+
+  /* grid tool */
+  .tool{border:1px solid var(--line);border-radius:10px;padding:14px;background:#fbfaf7;margin:16px 0}
+  .tool h4{margin:0 0 6px;font-size:16px}
+  .ctrls{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:8px}
+  @media (max-width:560px){ .ctrls{grid-template-columns:1fr} }
+  .ctrl{border-radius:8px;padding:10px 12px;background:#fff;border:1px solid var(--line)}
+  .ctrl .name{font-weight:700;font-size:15px}
+  .ctrl.long .name{color:var(--rust)} .ctrl.short .name{color:var(--steel)}
+  .stepper{display:flex;align-items:center;gap:10px;margin:6px 0}
+  .stepper button{width:36px;height:36px;padding:0;font-size:20px;line-height:1}
+  .stepper .n{font-size:22px;font-weight:800;min-width:28px;text-align:center}
+  .gap{font-size:14.5px}
+  .gap.ok{color:var(--good)} .gap.no{color:var(--bad)}
+
+  .gatebox{text-align:center;margin:20px 0 4px}
+  .padcard{background:var(--accent-soft);border:1px solid #f3c7a8;border-radius:10px;padding:12px 16px;margin:10px 0}
+  .padcard b{font-size:18px}
+  .pricelist{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+  .donebox{background:var(--good-soft);border:1px solid #a9d8b8;border-radius:10px;padding:14px 16px;margin:16px 0;color:var(--good);font-weight:600}
+  .counter{font-size:14px;color:var(--muted)}
+  footer{max-width:820px;margin:0 auto;padding:0 16px 40px;color:var(--muted);font-size:13px;display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap}
+  footer button{background:transparent;color:var(--muted);text-decoration:underline;padding:0;font-weight:500}
+  .hidden{display:none !important}
+  sup{line-height:0}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="top-inner">
+    <div class="top-title">Estimating a Concrete Pad</div>
+    <nav class="parts" id="nav"></nav>
+  </div>
+  <div class="progress"><div id="bar"></div></div>
+</header>
+
+<main id="flow">
+
+<!-- ===================== PART 0 ===================== -->
+<section class="part" id="p0" data-title="Why Estimate?">
+  <p class="kicker">Part 0</p>
+  <h2>Why Estimate?</h2>
+  <p class="lead">A <b>concrete pad</b> (or slab) is a flat layer of concrete poured on the ground. It's what you see under sheds, garages, patios, driveways, and many houses. Building one takes three main materials:</p>
+  <ul>
+    <li><b>Forms:</b> a wooden frame around the edge that holds the wet concrete in shape until it hardens.</li>
+    <li><b>Rebar:</b> a grid of steel bars inside the slab that keeps it from cracking apart.</li>
+    <li><b>Concrete:</b> delivered wet by a mixer truck and poured into the forms, where it hardens into the pad.</li>
+  </ul>
+  <p>Before anyone pours a slab, someone has to figure out exactly what to order and what it will cost. On many projects, concrete alone is 15–20% of the total cost. Getting it wrong is expensive either way. Order too little, and the crew has to stop mid-pour and wait for another truck while the concrete already placed starts to set. Order too much, and you pay for concrete you can't use and then have to get rid of it.</p>
+  <p>In this tutorial, you'll learn the method by working through an example pad. Then you'll practice on random pads until you've got it. After that, you'll estimate your own utility shed pad.</p>
+  <h3>What you'll be able to do</h3>
+  <ul>
+    <li>Calculate how much concrete a pad needs and how much to order</li>
+    <li>Lay out and count the rebar for a pad</li>
+    <li>Figure out the lumber for the forms</li>
+    <li>Put it all together into a cost estimate</li>
+  </ul>
+  <div class="gatebox gate" data-id="start"><button class="big" data-continue="start">Let's go →</button></div>
+</section>
+
+<!-- ===================== PART 1 ===================== -->
+<section class="part" id="p1" data-title="Concrete Volume">
+  <p class="kicker">Part 1</p>
+  <h2>Concrete Volume</h2>
+  <p class="lead"><b>Our example pad: 10 ft × 14 ft, 4 in. thick</b></p>
+  <div class="twofig">
+    <figure><div data-svg="planWorked"></div><figcaption>Plan view (looking down)</figcaption></figure>
+    <figure><div data-svg="section"></div><figcaption>Section (cut through the slab)</figcaption></figure>
+  </div>
+  <h3>Step 1: Get everything into the same unit.</h3>
+  <p>Two dimensions are in feet and one is in inches. You can't multiply them together until they match. Convert the thickness to feet:</p>
+  <p><span class="formula">4 in. ÷ 12 = 4/12 ft = 0.333… ft</span></p>
+  <p>Keep the fraction (4/12, or 1/3) if you can. Rounding to 0.33 makes your answer a little low.</p>
+  <h3>Step 2: Find the volume.</h3>
+  <p><span class="formula">Volume = Length × Width × Thickness</span></p>
+  <div class="check" data-check="w-ft3"></div>
+  <h3>Step 3: Convert to cubic yards.</h3>
+  <p>Concrete is sold by the cubic yard (yd<sup>3</sup>). A cubic yard is a cube 3 ft on each side, so it holds 3 × 3 × 3 = 27 cubic feet.</p>
+  <figure><div data-svg="cube"></div><figcaption>One cubic yard = 3 layers of 9 one-foot cubes = 27 ft<sup>3</sup></figcaption></figure>
+  <p>To convert, divide by 27.</p>
+  <div class="check" data-check="w-yd3"></div>
+</section>
+
+<!-- ===================== PART 2 ===================== -->
+<section class="part" id="p2" data-title="How Much to Order">
+  <p class="kicker">Part 2</p>
+  <h2>How Much to Order</h2>
+  <p>Ready-mix concrete is ordered in ½ cubic yard steps: 1.0, 1.5, 2.0, 2.5, and so on. You can't order 1.73, so you have to pick a step.</p>
+  <p>Always round <b>up</b>. Coming up short in the middle of a pour is the worst-case scenario.</p>
+  <div class="check" data-check="w-order"></div>
+  <h3>Step 4: Concrete cost.</h3>
+  <p>Multiply the amount you're ordering by the price per cubic yard.</p>
+  <p><span class="price">Example price for this tutorial: <b>$165 per yd<sup>3</sup></b></span></p>
+  <div class="check" data-check="w-conc"></div>
+  <div class="callout"><p><b>Did you know?</b> Most ready-mix suppliers charge an extra "short load" fee for small orders. On a small pad, that fee can make the price per yard look very different. You'll come back to this when you estimate your shed.</p></div>
+</section>
+
+<!-- ===================== PART 3 ===================== -->
+<section class="part" id="p3" data-title="Rebar Layout">
+  <p class="kicker">Part 3</p>
+  <h2>Rebar Layout</h2>
+  <p>Concrete is very strong when you squeeze it (compression) but weak when you pull on it (tension). Steel reinforcing bar, called <b>rebar</b>, is set into the slab to handle the pulling forces.</p>
+  <p>For our pads, the rebar follows three rules:</p>
+  <ol class="rules">
+    <li><b>3 in. edge distance.</b> Bars stop 3 inches short of the edge of the concrete, so steel near the surface doesn't rust.</li>
+    <li><b>No more than 24 in. apart.</b> Bars form a grid, and no two bars can be more than 2 feet apart.</li>
+    <li><b>A bar at each edge.</b> The first and last bar in each direction sit right at the 3 in. edge distance.</li>
+  </ol>
+  <figure><div data-svg="edge"></div><figcaption>The dashed line is 3 in. inside the edge. All rebar stays inside it.</figcaption></figure>
+  <h3>Step 5: Find the usable area.</h3>
+  <p>Take 3 inches off <b>each</b> side. That's 6 inches (0.5 ft) off each dimension.</p>
+  <div class="check" data-check="w-usable"></div>
+  <h3>Step 6: Count the bars in each direction.</h3>
+  <p>This is the step people mix up most often, so go slowly.</p>
+  <p>Bars that <b style="color:var(--rust)">run the long way</b> (parallel to the 14 ft side) are spaced out <b>across the short side</b>. Bars that <b style="color:var(--steel)">run the short way</b> are spaced out <b>across the long side</b>.</p>
+  <div class="twofig">
+    <figure><div data-svg="dirLong"></div><figcaption><b style="color:var(--rust)">Run the long way</b>, spaced across 9.5 ft</figcaption></figure>
+    <figure><div data-svg="dirShort"></div><figcaption><b style="color:var(--steel)">Run the short way</b>, spaced across 13.5 ft</figcaption></figure>
+  </div>
+  <p>To count the bars in one direction:</p>
+  <ul>
+    <li>Spaces = distance you're spacing across ÷ 2 ft, <b>rounded up</b></li>
+    <li>Bars = spaces + 1 (there's always one more bar than spaces, like fence posts)</li>
+  </ul>
+  <p><b style="color:var(--rust)">Bars running the long way:</b> spaced across 9.5 ft<br>
+  <span class="formula">9.5 ÷ 2 = 4.75 → 5 spaces → 6 bars</span>, each 13.5 ft long</p>
+  <p><b>Now you try the other direction.</b></p>
+  <div class="check" data-check="w-shortbars"></div>
+  <div class="tool" id="gridtool">
+    <h4>See it on the grid</h4>
+    <p style="margin:0 0 6px;font-size:15px">Set each direction to the number of bars you found. Then try one bar fewer, and see what happens to the gap.</p>
+    <figure style="margin:8px 0"><div id="gridsvg"></div></figure>
+    <div class="ctrls">
+      <div class="ctrl long"><div class="name">Run the long way</div>
+        <div class="stepper"><button data-step="long:-1" aria-label="fewer">−</button><span class="n" id="nLong">2</span><button data-step="long:1" aria-label="more">+</button><span>bars</span></div>
+        <div class="gap" id="gapLong"></div></div>
+      <div class="ctrl short"><div class="name">Run the short way</div>
+        <div class="stepper"><button data-step="short:-1" aria-label="fewer">−</button><span class="n" id="nShort">2</span><button data-step="short:1" aria-label="more">+</button><span>bars</span></div>
+        <div class="gap" id="gapShort"></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== PART 4 ===================== -->
+<section class="part" id="p4" data-title="Rebar Pieces and Laps">
+  <p class="kicker">Part 4</p>
+  <h2>Rebar Pieces and Laps</h2>
+  <p>Rebar comes in <b>10 ft lengths</b>. Some of the bars you just counted are longer than that.</p>
+  <ul>
+    <li><b>If a bar run is 10 ft or less</b>, one piece of rebar covers it.</li>
+    <li><b>If a bar run is longer than 10 ft</b>, you need a second piece. The two pieces overlap by <b>6 inches</b> and are wired together. This overlap is called a <b>lap</b>, and it lets the two pieces act like one bar.</li>
+  </ul>
+  <figure><div data-svg="lap"></div><figcaption>A 13.5 ft run: one full 10 ft piece plus a cut piece, lapped 6 in.</figcaption></figure>
+  <h3>Step 7: Count the pieces.</h3>
+  <p><b style="color:var(--steel)">Runs the short way (9.5 ft):</b> each fits in one piece → 8 runs × 1 = <b>8 pieces</b><br>
+  <b style="color:var(--rust)">Runs the long way (13.5 ft):</b> each needs two pieces → 6 runs × 2 = <b>12 pieces</b></p>
+  <div class="check" data-check="w-pieces"></div>
+  <h3>Step 8: How long is the second piece?</h3>
+  <p>The first piece covers 10 ft. The second piece covers the rest of the run, plus the 6 in. lap.</p>
+  <div class="check" data-check="w-second"></div>
+  <p>That leaves a 6 ft leftover from every second bar.</p>
+  <div class="callout think"><p><b>Think about it:</b> Six runs each leave a 6 ft scrap, which is 36 ft of rebar left over. Could any of those pieces be used somewhere else on the pad? Would that change how many bars you need to buy? Keep this question in mind for your shed estimate.</p></div>
+  <h3>Step 9: Rebar cost.</h3>
+  <p><span class="price">Example price: <b>$9.50 per 10 ft piece</b> of #4 rebar</span></p>
+  <div class="check" data-check="w-rebarcost"></div>
+</section>
+
+<!-- ===================== PART 5 ===================== -->
+<section class="part" id="p5" data-title="Forms">
+  <p class="kicker">Part 5</p>
+  <h2>Forms</h2>
+  <p>Before the concrete is poured, a wooden frame called a <b>form</b> is built around the edge of the pad to hold the wet concrete in place until it hardens.</p>
+  <p>For our pads, the forms are made from 2×6 lumber, one board per side.</p>
+  <h3>Wait, why a 2×6 for a 4 in. slab?</h3>
+  <p>Lumber names are <i>nominal</i> sizes, not the real measurements. A "2×4" is actually 1½ in. × 3½ in., which is too short for a 4 in. slab. A 2×6 is actually 1½ in. × 5½ in., so it gets ripped (cut lengthwise) down to 4 in.</p>
+  <figure><div data-svg="lumber"></div><figcaption>End views, drawn to scale</figcaption></figure>
+  <h3>Step 10: Pick the boards.</h3>
+  <p>2×6 boards are sold in 8, 10, 12, 14, and 16 ft lengths. For each side, pick the shortest board that's at least as long as that side. If a side isn't a stock length, buy the next size up and cut it.</p>
+  <p>The example pad needs:</p>
+  <ul>
+    <li>2 boards for the 10 ft sides → 2 × 10 ft</li>
+    <li>2 boards for the 14 ft sides → 2 × 14 ft</li>
+  </ul>
+  <h3>Step 11: Form cost.</h3>
+  <p><span class="price">Example prices: <b>2×6×10 = $8.50</b>, <b>2×6×14 = $12.50</b></span></p>
+  <div class="check" data-check="w-forms"></div>
+</section>
+
+<!-- ===================== PART 6 ===================== -->
+<section class="part" id="p6" data-title="The Estimate">
+  <p class="kicker">Part 6</p>
+  <h2>The Estimate</h2>
+  <p>Now put it all in one table.</p>
+  <div class="tablewrap"><table class="est">
+    <thead><tr><th>Material</th><th>Size/Description</th><th>Quantity</th><th>Unit Cost</th><th>Cost</th></tr></thead>
+    <tbody>
+      <tr><td>Concrete</td><td>10 ft × 14 ft × 4 in.</td><td>2.0 yd<sup>3</sup></td><td class="num">$165.00</td><td class="num">$330.00</td></tr>
+      <tr><td>Steel</td><td>#4 (½ in. × 10 ft)</td><td>20</td><td class="num">$9.50</td><td class="num">$190.00</td></tr>
+      <tr><td>Forms</td><td>2×6 – 10 ft</td><td>2</td><td class="num">$8.50</td><td class="num">$17.00</td></tr>
+      <tr><td>Forms</td><td>2×6 – 14 ft</td><td>2</td><td class="num">$12.50</td><td class="num">$25.00</td></tr>
+      <tr class="total"><td>Total</td><td></td><td></td><td></td><td class="num" id="wTotalCell">?</td></tr>
+    </tbody>
+  </table></div>
+  <div class="check" data-check="w-total"></div>
+  <div class="check" data-check="w-pct"></div>
+  <div class="callout think"><p>That's more than a third of the cost. Remember the scrap question from Part 4.</p></div>
+  <div class="gatebox gate" data-id="to-practice"><button class="big" data-continue="to-practice">On to practice →</button></div>
+</section>
+
+<!-- ===================== PART 7 ===================== -->
+<section class="part" id="p7" data-title="You Try">
+  <p class="kicker">Part 7</p>
+  <h2>You Try</h2>
+  <p>Here's a new pad. Work through the same steps. You'll get feedback on each answer, and you can generate a new pad as many times as you want.</p>
+  <div id="practice"></div>
+  <div class="gate" data-id="practice-done" id="practiceGate"></div>
+</section>
+
+<!-- ===================== PART 8 ===================== -->
+<section class="part" id="p8" data-title="Your Shed">
+  <p class="kicker">Part 8</p>
+  <h2>Your Shed</h2>
+  <p class="lead">You're ready to estimate the concrete pad for your utility shed.</p>
+  <p>Everything you need is on the <b>A1 – Example Utility Shed Drawing</b>:</p>
+  <ul>
+    <li><b>Pad dimensions</b> → Floor Plan (view 1)</li>
+    <li><b>Slab thickness</b> → Exterior Wall Section (view 7). Look for "4″ Reinf. Conc. Slab."</li>
+  </ul>
+  <p>Use the same steps you just practiced. Your shed estimate is the starting point for your graded assignment.</p>
+  <p class="counter">You can come back to Part 7 for more practice at any time.</p>
+</section>
+
+</main>
+<footer><span>Civil Engineering &amp; Architecture · Timber Creek High School</span><button id="reset">Start over</button></footer>
+
+<script>
+(function(){
+"use strict";
+
+/* ---------- helpers ---------- */
+const $ = (s, r=document) => r.querySelector(s);
+const $$ = (s, r=document) => Array.from(r.querySelectorAll(s));
+const near = (a, b, t) => Math.abs(a - b) <= t + 1e-9;
+const money = v => "$" + v.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+const r2 = v => Math.round(v * 100) / 100;
+const STOCK = [8, 10, 12, 14, 16];
+function ftin(x){ const f = Math.floor(x + 1e-9), i = Math.round((x - f) * 12);
+  return i ? `${f} ft ${i} in.` : `${f} ft`; }
+function ftinDec(x){ return Number.isInteger(x) ? `${x} ft` : `${ftin(x)} (${x} ft)`; }
+function parseNum(s){ if (s == null) return NaN; s = String(s).replace(/[$,%\s]/g, "").replace(/ft|in\.?|yd|bars?/gi, "");
+  if (s === "") return NaN; if (/^\d+\/\d+$/.test(s)) { const [a,b] = s.split("/"); return +a / +b; } return Number(s); }
+
+/* ---------- pad math (shared by worked example + practice) ---------- */
+function solve(pad){
+  const L = pad.L, W = pad.W, T = pad.T;
+  const ft3 = L * W * T / 12, yd3 = ft3 / 27;
+  const order = Math.ceil(yd3 * 2 - 1e-9) / 2;
+  const concCost = r2(order * pad.conc);
+  const uL = L - 0.5, uW = W - 0.5;
+  const spLong = Math.ceil(uW / 2 - 1e-9), nLong = spLong + 1;     // bars parallel to L, spaced across uW
+  const spShort = Math.ceil(uL / 2 - 1e-9), nShort = spShort + 1;  // bars parallel to W, spaced across uL
+  const per = run => run <= 10 + 1e-9 ? 1 : 2;
+  const pLong = per(uL), pShort = per(uW);
+  const pieces = nLong * pLong + nShort * pShort;
+  const rebarCost = r2(pieces * pad.rebar);
+  const bL = STOCK.find(s => s >= L - 1e-9), bW = STOCK.find(s => s >= W - 1e-9);
+  const formCost = r2(2 * pad.boards[bL] + 2 * pad.boards[bW]);
+  const total = r2(concCost + rebarCost + formCost);
+  const pct = rebarCost / total * 100;
+  return {ft3, yd3, order, concCost, uL, uW, spLong, nLong, spShort, nShort, pLong, pShort, pieces, rebarCost, bL, bW, formCost, total, pct};
+}
+
+/* ---------- SVG drawings (flat, plan/elevation only) ---------- */
+const C = {ink:"#1f2328", muted:"#5b616b", conc:"#e4e1da", concEdge:"#8a867d", rust:"#b4532a", steel:"#2f6f9f", good:"#1f7a3f", bad:"#b42318"};
+function svgOpen(w, h){ return `<svg viewBox="0 0 ${w} ${h}" width="${w}" xmlns="http://www.w3.org/2000/svg" font-family="system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif">`; }
+function dimH(x1, x2, y, label){ return `<g stroke="${C.ink}" stroke-width="1"><line x1="${x1}" y1="${y}" x2="${x2}" y2="${y}"/><line x1="${x1}" y1="${y-6}" x2="${x1}" y2="${y+6}"/><line x1="${x2}" y1="${y-6}" x2="${x2}" y2="${y+6}"/></g>
+  <rect x="${(x1+x2)/2-34}" y="${y-10}" width="68" height="20" fill="#fff"/><text x="${(x1+x2)/2}" y="${y+5}" text-anchor="middle" font-size="14" font-weight="700" fill="${C.ink}">${label}</text>`; }
+function dimV(y1, y2, x, label){ const cy = (y1+y2)/2; return `<g stroke="${C.ink}" stroke-width="1"><line x1="${x}" y1="${y1}" x2="${x}" y2="${y2}"/><line x1="${x-6}" y1="${y1}" x2="${x+6}" y2="${y1}"/><line x1="${x-6}" y1="${y2}" x2="${x+6}" y2="${y2}"/></g>
+  <rect x="${x-10}" y="${cy-34}" width="20" height="68" fill="#fff"/><text x="${x}" y="${cy}" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="700" fill="${C.ink}" transform="rotate(-90 ${x} ${cy})">${label}</text>`; }
+
+/* plan view of a pad; opts: nLong, nShort, show ('both'|'long'|'short'|'none'), edge (bool), laps (bool), maxW, maxH */
+function planSVG(L, W, o = {}){
+  const maxW = o.maxW || 440, maxH = o.maxH || 260, ml = 44, mt = 40, mr = 16, mb = 16;
+  const s = Math.min(maxW / L, maxH / W);
+  const w = L * s, h = W * s, x0 = ml, y0 = mt, e = 0.25 * s;
+  let out = svgOpen(ml + w + mr, mt + h + mb);
+  out += `<rect x="${x0}" y="${y0}" width="${w}" height="${h}" fill="${C.conc}" stroke="${C.concEdge}" stroke-width="2"/>`;
+  if (o.edge) out += `<rect x="${x0+e}" y="${y0+e}" width="${w-2*e}" height="${h-2*e}" fill="none" stroke="${C.ink}" stroke-width="1.2" stroke-dasharray="5 4"/>`;
+  const show = o.show || "none", uL = L - 0.5, uW = W - 0.5;
+  const sw = o.thin ? 2 : 3;
+  if ((show === "both" || show === "long") && o.nLong >= 2){
+    for (let i = 0; i < o.nLong; i++){
+      const y = y0 + e + i * (h - 2*e) / (o.nLong - 1);
+      if (o.laps && uL > 10){ const xa = x0 + e, xb = xa + 10*s, xc = xa + 9.5*s;
+        out += `<line x1="${xa}" y1="${y}" x2="${xb}" y2="${y}" stroke="${C.rust}" stroke-width="${sw}" stroke-linecap="round"/>`;
+        out += `<line x1="${xc}" y1="${y+2.5}" x2="${x0+w-e}" y2="${y+2.5}" stroke="${C.rust}" stroke-width="${sw}" stroke-linecap="round"/>`;
+      } else out += `<line x1="${x0+e}" y1="${y}" x2="${x0+w-e}" y2="${y}" stroke="${C.rust}" stroke-width="${sw}" stroke-linecap="round"/>`;
+    }
+  }
+  if ((show === "both" || show === "short") && o.nShort >= 2){
+    for (let j = 0; j < o.nShort; j++){
+      const x = x0 + e + j * (w - 2*e) / (o.nShort - 1);
+      if (o.laps && uW > 10){ const ya = y0 + e, yb = ya + 10*s, yc = ya + 9.5*s;
+        out += `<line x1="${x}" y1="${ya}" x2="${x}" y2="${yb}" stroke="${C.steel}" stroke-width="${sw}" stroke-linecap="round"/>`;
+        out += `<line x1="${x+2.5}" y1="${yc}" x2="${x+2.5}" y2="${y0+h-e}" stroke="${C.steel}" stroke-width="${sw}" stroke-linecap="round"/>`;
+      } else out += `<line x1="${x}" y1="${y0+e}" x2="${x}" y2="${y0+h-e}" stroke="${C.steel}" stroke-width="${sw}" stroke-linecap="round"/>`;
+    }
+  }
+  out += dimH(x0, x0 + w, mt - 20, o.lLabel || ftin(L));
+  out += dimV(y0, y0 + h, ml - 22, o.wLabel || ftin(W));
+  return out + `</svg>`;
+}
+
+function sectionSVG(){
+  // slab section: 4 in. thick, shown exaggerated
+  let o = svgOpen(320, 170);
+  o += `<line x1="20" y1="120" x2="300" y2="120" stroke="${C.ink}" stroke-width="1.5"/>`;
+  for (let x = 24; x < 300; x += 14) o += `<line x1="${x}" y1="122" x2="${x-10}" y2="134" stroke="${C.muted}" stroke-width="1"/>`;
+  o += `<text x="160" y="155" text-anchor="middle" font-size="13" fill="${C.muted}">ground</text>`;
+  o += `<rect x="40" y="70" width="210" height="50" fill="${C.conc}" stroke="${C.concEdge}" stroke-width="2"/>`;
+  o += `<circle cx="80" cy="95" r="4" fill="${C.rust}"/><circle cx="130" cy="95" r="4" fill="${C.rust}"/><circle cx="180" cy="95" r="4" fill="${C.rust}"/><circle cx="225" cy="95" r="4" fill="${C.rust}"/>`;
+  o += `<text x="145" y="60" text-anchor="middle" font-size="13" fill="${C.ink}">concrete slab (rebar shown as dots)</text>`;
+  o += `<g stroke="${C.ink}"><line x1="272" y1="70" x2="272" y2="120"/><line x1="266" y1="70" x2="278" y2="70"/><line x1="266" y1="120" x2="278" y2="120"/></g>`;
+  o += `<text x="284" y="99" font-size="14" font-weight="700" fill="${C.ink}">4 in.</text>`;
+  return o + `</svg>`;
+}
+
+function cubeSVG(){
+  const cell = 26, gap = 46;
+  let o = svgOpen(3*3*cell + 2*gap + 40, 3*cell + 70);
+  for (let k = 0; k < 3; k++){
+    const x0 = 20 + k * (3*cell + gap), y0 = 28;
+    for (let i = 0; i < 3; i++) for (let j = 0; j < 3; j++)
+      o += `<rect x="${x0+j*cell}" y="${y0+i*cell}" width="${cell}" height="${cell}" fill="${C.conc}" stroke="${C.concEdge}" stroke-width="1.5"/>`;
+    o += `<text x="${x0+1.5*cell}" y="18" text-anchor="middle" font-size="13" font-weight="700" fill="${C.ink}">Layer ${k+1}</text>`;
+    o += `<text x="${x0+1.5*cell}" y="${y0+3*cell+20}" text-anchor="middle" font-size="13" fill="${C.muted}">9 ft³</text>`;
+    if (k < 2) o += `<text x="${x0+3*cell+gap/2}" y="${y0+1.5*cell+6}" text-anchor="middle" font-size="22" font-weight="700" fill="${C.muted}">+</text>`;
+  }
+  return o + `</svg>`;
+}
+
+function lapSVG(){
+  // 13.5 ft run drawn at 40 px/ft
+  const s = 40, x0 = 20, y = 70;
+  let o = svgOpen(x0*2 + 13.5*s, 150);
+  o += `<line x1="${x0}" y1="${y}" x2="${x0+10*s}" y2="${y}" stroke="${C.rust}" stroke-width="6" stroke-linecap="round"/>`;
+  o += `<line x1="${x0+9.5*s}" y1="${y+8}" x2="${x0+13.5*s}" y2="${y+8}" stroke="${C.rust}" stroke-width="6" stroke-linecap="round" opacity=".75"/>`;
+  for (const t of [9.6, 9.75, 9.9]) o += `<line x1="${x0+t*s}" y1="${y-6}" x2="${x0+t*s}" y2="${y+14}" stroke="${C.ink}" stroke-width="1.5"/>`;
+  o += `<text x="${x0+5*s}" y="${y-14}" text-anchor="middle" font-size="14" font-weight="700" fill="${C.ink}">Piece 1: full 10 ft bar</text>`;
+  o += `<text x="${x0+12*s}" y="${y-14}" text-anchor="middle" font-size="14" font-weight="700" fill="${C.ink}">Piece 2: cut to fit</text>`;
+  o += `<text x="${x0+9.75*s}" y="${y+34}" text-anchor="middle" font-size="12" fill="${C.muted}">wire ties</text>`;
+  // lap dim
+  o += `<g stroke="${C.ink}"><line x1="${x0+9.5*s}" y1="${y-34}" x2="${x0+10*s}" y2="${y-34}"/><line x1="${x0+9.5*s}" y1="${y-40}" x2="${x0+9.5*s}" y2="${y-28}"/><line x1="${x0+10*s}" y1="${y-40}" x2="${x0+10*s}" y2="${y-28}"/></g>`;
+  o += `<text x="${x0+9.75*s}" y="${y-46}" text-anchor="middle" font-size="13" font-weight="700" fill="#c2410c">6 in. lap</text>`;
+  // overall dim
+  o += dimH(x0, x0 + 13.5*s, y + 64, "13.5 ft");
+  return o + `</svg>`;
+}
+
+function lumberSVG(){
+  const s = 18, base = 150;
+  let o = svgOpen(400, 190);
+  // slab height reference 4 in.
+  const draw = (x, wIn, hIn, label, sub) => {
+    let g = `<rect x="${x}" y="${base - hIn*s}" width="${wIn*s}" height="${hIn*s}" fill="#e9d6b4" stroke="#8a6a3a" stroke-width="2"/>`;
+    g += `<text x="${x + wIn*s/2}" y="${base + 20}" text-anchor="middle" font-size="14" font-weight="700" fill="${C.ink}">${label}</text>`;
+    g += `<text x="${x + wIn*s/2}" y="${base + 36}" text-anchor="middle" font-size="12.5" fill="${C.muted}">${sub}</text>`;
+    return g;
+  };
+  o += draw(60, 1.5, 3.5, '"2×4"', "1½ × 3½ in.");
+  o += draw(230, 1.5, 5.5, '"2×6"', "1½ × 5½ in.");
+  // rip line at 4 in. on 2x6
+  o += `<line x1="222" y1="${base - 4*s}" x2="${230 + 1.5*s + 8}" y2="${base - 4*s}" stroke="${C.bad}" stroke-width="2" stroke-dasharray="6 4"/>`;
+  o += `<text x="${230 + 1.5*s + 14}" y="${base - 4*s + 5}" font-size="13" font-weight="700" fill="${C.bad}">rip to 4 in.</text>`;
+  // 4 in. slab reference band
+  o += `<line x1="20" y1="${base - 4*s}" x2="160" y2="${base - 4*s}" stroke="${C.steel}" stroke-width="1.5" stroke-dasharray="3 3"/>`;
+  o += `<line x1="20" y1="${base}" x2="380" y2="${base}" stroke="${C.ink}" stroke-width="1.5"/>`;
+  o += `<text x="20" y="${base - 4*s - 8}" font-size="12.5" fill="${C.steel}">4 in. slab height</text>`;
+  o += `<text x="${60 + 1.5*s + 10}" y="${base - 3.5*s + 4}" font-size="12.5" fill="${C.bad}">too short</text>`;
+  return o + `</svg>`;
+}
+
+/* ---------- worked example ---------- */
+const WORKED = {L:14, W:10, T:4, conc:165, rebar:9.5, boards:{8:6.8, 10:8.5, 12:10.25, 14:12.5, 16:14.5}};
+const WS = solve(WORKED);
+
+function renderStatic(){
+  const map = {
+    planWorked: () => planSVG(14, 10, {maxW:300, maxH:200}),
+    section: sectionSVG,
+    cube: cubeSVG,
+    edge: () => planSVG(14, 10, {edge:true, maxW:440, maxH:240}),
+    dirLong: () => planSVG(14, 10, {edge:true, show:"long", nLong:WS.nLong, maxW:300, maxH:200}),
+    dirShort: () => planSVG(14, 10, {edge:true, show:"short", nShort:WS.nShort, maxW:300, maxH:200}),
+    lap: lapSVG,
+    lumber: lumberSVG
+  };
+  $$("[data-svg]").forEach(el => { el.innerHTML = map[el.dataset.svg](); });
+}
+
+/* ---------- check widget ---------- */
+// cfg: {id, tag, q, inputs:[{pre,unit}], ans:[..], tol, unordered, fb:[[fn,msg]], how}
+function mountCheck(el, cfg, onSolve, preSolved){
+  el.classList.add("check");
+  el.innerHTML = "";
+  el.dataset.id = cfg.id;
+  const tag = document.createElement("div"); tag.className = "tag"; tag.textContent = cfg.tag || "Check"; el.appendChild(tag);
+  const q = document.createElement("div"); q.className = "q"; q.innerHTML = cfg.q; el.appendChild(q);
+  const row = document.createElement("div"); row.className = "row"; el.appendChild(row);
+  const inputs = cfg.inputs.map((spec, i) => {
+    if (i > 0) { const sp = document.createElement("span"); sp.className = "sep"; sp.textContent = spec.join || "×"; row.appendChild(sp); }
+    const f = document.createElement("label"); f.className = "field";
+    if (spec.pre) { const p = document.createElement("span"); p.className = "unit"; p.textContent = spec.pre; f.appendChild(p); }
+    const inp = document.createElement("input"); inp.type = "text"; inp.inputMode = "decimal"; inp.autocomplete = "off";
+    inp.setAttribute("aria-label", (spec.aria || "answer")); f.appendChild(inp);
+    if (spec.unit) { const u = document.createElement("span"); u.className = "unit"; u.innerHTML = spec.unit; f.appendChild(u); }
+    row.appendChild(f); return inp;
+  });
+  const btn = document.createElement("button"); btn.textContent = "Check"; row.appendChild(btn);
+  const how = document.createElement("button"); how.className = "ghost hidden"; how.textContent = "Show me how"; row.appendChild(how);
+  const fb = document.createElement("div"); fb.className = "fb"; el.appendChild(fb);
+  let tries = 0, done = false;
+  const fmtAns = v => (cfg.inputs[0].pre === "$" ? v.toFixed(2) : String(r2(v)));
+  function finish(kind){
+    done = true; el.classList.add("solved");
+    inputs.forEach((inp, i) => { inp.disabled = true; if (kind === "shown" || inp.value === "") inp.value = fmtAns(cfg.ans[i]); });
+    btn.disabled = true; how.classList.add("hidden");
+    if (kind === "shown") { fb.className = "fb show shown"; fb.innerHTML = cfg.how; }
+    else { fb.className = "fb show good"; fb.innerHTML = "✅ " + (cfg.ok || "Correct!"); }
+  }
+  function check(){
+    if (done) return;
+    const vals = inputs.map(i => parseNum(i.value));
+    if (vals.some(v => isNaN(v))) { fb.className = "fb show bad"; fb.textContent = "Enter a number in each box."; return; }
+    let ok;
+    if (cfg.unordered) { const a = [...vals].sort((x,y)=>x-y), b = [...cfg.ans].sort((x,y)=>x-y); ok = a.every((v,i)=>near(v,b[i],cfg.tol)); }
+    else ok = vals.every((v,i)=>near(v,cfg.ans[i],cfg.tol));
+    if (ok) { finish("good"); onSolve && onSolve(cfg.id); return; }
+    tries++;
+    let msg = null;
+    for (const [fn, m] of (cfg.fb || [])) { try { if (fn(vals)) { msg = m; break; } } catch(e){} }
+    fb.className = "fb show bad";
+    fb.innerHTML = msg || "Not quite. Check your work and try again.";
+    if (tries >= 3) how.classList.remove("hidden");
+  }
+  btn.addEventListener("click", check);
+  inputs.forEach(i => i.addEventListener("keydown", e => { if (e.key === "Enter") check(); }));
+  how.addEventListener("click", () => { finish("shown"); onSolve && onSolve(cfg.id); });
+  if (preSolved) finish("good");
+}
+
+/* feedback library (works for any pad) */
+function fbFor(kind, pad, S){
+  const L = pad.L, W = pad.W, T = pad.T;
+  switch(kind){
+    case "ft3": return [
+      [v => near(v[0], L*W*T, 0.5), `Looks like you multiplied by ${T} instead of ${T}/12. Convert inches to feet first.`],
+      [v => near(v[0], L*W*r2(T/12), 0.05) && !near(L*W*r2(T/12), S.ft3, 0.06), `Close. You rounded the thickness to ${r2(T/12)}. Try using ${T}/12.`],
+      [v => near(v[0], L*W, 0.5), "That's the area, not the volume. Multiply by the thickness (in feet) too."]];
+    case "yd3": return [
+      [v => near(v[0], S.ft3/3, 0.02) || near(v[0], S.ft3/9, 0.02), "A cubic yard isn't 3 or 9 cubic feet. Look at the cube again. How many small cubes fit inside?"],
+      [v => near(v[0], S.ft3, 0.1), "That's still in cubic feet. Divide by 27 to get cubic yards."]];
+    case "order": return [
+      [v => near(v[0], S.order - 0.5, 0.001), "That's less than the pad needs. You'd run out before the pour is finished. Round up."],
+      [v => near(v[0], S.yd3, 0.02), "Concrete is ordered in ½ yd³ steps. Round up to the next step."],
+      [v => v[0] > S.order + 0.01 && (v[0]*2) % 1 === 0, "That works, but it's more than you need. Round up to the <i>next</i> ½ yd³ step, not further."]];
+    case "conc": return [
+      [v => near(v[0], S.yd3 * pad.conc, 0.6) || near(v[0], r2(S.yd3) * pad.conc, 0.02), `You priced ${r2(S.yd3)} yd³. You pay for what you order, not what the pad needs.`]];
+    case "usable": return [
+      [v => { const a=[...v].sort((x,y)=>x-y); return near(a[0], W-0.25, 0.01) && near(a[1], L-0.25, 0.01); }, "The pad has two edges in each direction. Take 3 in. off both sides."],
+      [v => { const a=[...v].sort((x,y)=>x-y); return near(a[0], W, 0.01) && near(a[1], L, 0.01); }, "Those are the full pad dimensions. Take 3 in. off each side."],
+      [v => { const a=[...v].sort((x,y)=>x-y); return near(a[0], W-6, 0.01) || near(a[1], L-6, 0.01); }, "3 inches is 0.25 ft, not 3 ft. Two edges = 0.5 ft off each dimension."]];
+    case "bars": return (span, spaces) => [
+      [v => near(v[0], spaces, 0.01), "You counted the spaces. Don't forget the bar at the far edge. Bars = spaces + 1."],
+      [v => near(v[0], Math.floor(span/2) + 1, 0.01) && Math.floor(span/2) !== spaces, "Rounding down would put the bars more than 24 in. apart. Round the spaces up."],
+      [v => near(v[0], Math.ceil((span+0.5)/2 - 1e-9) + 1, 0.01) && Math.ceil((span+0.5)/2 - 1e-9) !== spaces, "Did you use the usable distance? Take the 3 in. edge distance off both sides first."]];
+    case "pieces": return [
+      [v => near(v[0], S.nLong + S.nShort, 0.01) && S.pieces !== S.nLong + S.nShort, "That's one piece per bar. Any run longer than 10 ft needs a second piece."],
+      [v => near(v[0], 2*(S.nLong + S.nShort), 0.01), "Only runs longer than 10 ft need two pieces. Runs of 10 ft or less fit in one."]];
+    case "second": return (run) => [
+      [v => near(v[0], run - 10, 0.01), "Don't forget the lap. The second piece has to overlap the first by 6 in. (0.5 ft)."],
+      [v => near(v[0], run - 10.5, 0.01), "The lap makes the second piece longer, not shorter. Add 0.5 ft."]];
+    case "rebarcost": return [
+      [v => near(v[0], (S.nLong + S.nShort) * pad.rebar, 0.02) && S.pieces !== S.nLong + S.nShort, "Use the total number of <i>pieces</i> (including second pieces), not the number of bar runs."]];
+    case "forms": return [
+      [v => near(v[0], pad.boards[S.bL] + pad.boards[S.bW], 0.02), "That's only two boards. A pad has four sides: two of each length."]];
+    case "total": return [
+      [v => near(v[0], S.concCost + S.rebarCost, 0.02), "Don't forget the form boards."]];
+    case "pct": return [
+      [v => near(v[0], S.pct/100, 0.01), "That's a decimal. Multiply by 100 to get a percent."],
+      [v => near(v[0], S.rebarCost / (S.total - S.rebarCost) * 100, 0.6), "Divide the rebar cost by the <i>total</i> cost, not by everything else."]];
+  }
+  return [];
+}
+
+const S = WS, P = WORKED;
+const CHECKS = {
+  "w-ft3": {q:"What's the volume of the example pad in cubic feet?", inputs:[{unit:"ft³"}], ans:[S.ft3], tol:0.06, fb:fbFor("ft3",P,S),
+    how:"10 × 14 × 4/12 = <b>46.67 ft³</b>"},
+  "w-yd3": {q:"What's the volume in cubic yards? (Round to 2 decimal places.)", inputs:[{unit:"yd³"}], ans:[S.yd3], tol:0.01, fb:fbFor("yd3",P,S),
+    how:"46.67 ÷ 27 = <b>1.73 yd³</b>"},
+  "w-order": {q:"How much concrete should you order for the example pad?", inputs:[{unit:"yd³"}], ans:[S.order], tol:0.001, fb:fbFor("order",P,S),
+    how:"1.73 is between 1.5 and 2.0. Round up: <b>2.0 yd³</b>"},
+  "w-conc": {q:"What's the concrete cost?", inputs:[{pre:"$"}], ans:[S.concCost], tol:0.011, fb:fbFor("conc",P,S),
+    how:"2.0 yd³ × $165 = <b>$330.00</b>"},
+  "w-usable": {q:"What's the usable area for the example pad?", inputs:[{unit:"ft", aria:"short side"},{unit:"ft", aria:"long side"}], ans:[S.uW, S.uL], tol:0.01, unordered:true, fb:fbFor("usable",P,S),
+    how:"10 − 0.5 = 9.5 ft and 14 − 0.5 = 13.5 ft → <b>9.5 ft × 13.5 ft</b>"},
+  "w-shortbars": {q:"How many bars run the short way?", inputs:[{unit:"bars"}], ans:[S.nShort], tol:0.01, fb:[
+      [v => near(v[0], 7, 0.01), "You may have counted spaces, or rounded down. Bars = spaces + 1, and spaces always round <i>up</i>."],
+      [v => near(v[0], 6, 0.01), "That's the count for the bars running the <i>long</i> way. The short-way bars are spaced across 13.5 ft."]],
+    how:"13.5 ÷ 2 = 6.75 → 7 spaces → <b>8 bars</b>, each 9.5 ft long", ok:"Correct! 13.5 ÷ 2 = 6.75 → 7 spaces → 8 bars, each 9.5 ft long."},
+  "w-pieces": {q:"How many 10 ft pieces of rebar do you need in total?", inputs:[{unit:"pieces"}], ans:[S.pieces], tol:0.01, fb:fbFor("pieces",P,S),
+    how:"8 + 12 = <b>20 pieces</b>"},
+  "w-second": {q:"For a 13.5 ft run, how long is the piece you cut from the second bar?", inputs:[{unit:"ft"}], ans:[4], tol:0.01, fb:fbFor("second",P,S)(13.5),
+    how:"13.5 − 10 + 0.5 = <b>4 ft</b>"},
+  "w-rebarcost": {q:"What's the rebar cost?", inputs:[{pre:"$"}], ans:[S.rebarCost], tol:0.011, fb:fbFor("rebarcost",P,S),
+    how:"20 × $9.50 = <b>$190.00</b>"},
+  "w-forms": {q:"What's the total cost of the form boards?", inputs:[{pre:"$"}], ans:[S.formCost], tol:0.011, fb:fbFor("forms",P,S),
+    how:"2 × $8.50 + 2 × $12.50 = $17.00 + $25.00 = <b>$42.00</b>"},
+  "w-total": {q:"What's the total cost of the estimate?", inputs:[{pre:"$"}], ans:[S.total], tol:0.011, fb:fbFor("total",P,S),
+    how:"$330.00 + $190.00 + $17.00 + $25.00 = <b>$562.00</b>"},
+  "w-pct": {q:"What percentage of the total cost is the rebar? (Round to the nearest whole percent.)", inputs:[{unit:"%"}], ans:[S.pct], tol:0.6, fb:fbFor("pct",P,S),
+    how:"$190 ÷ $562 = 0.338 → <b>34%</b>"}
+};
+
+/* ---------- progress / gating ---------- */
+const KEY = "cea-concrete-pad-v1";
+let solved = new Set();
+try { const raw = localStorage.getItem(KEY); if (raw) solved = new Set(JSON.parse(raw)); } catch(e){}
+function save(){ try { localStorage.setItem(KEY, JSON.stringify([...solved])); } catch(e){} }
+
+function markSolved(id){ solved.add(id); save(); reveal(); }
+
+function isGate(el){ return el.classList.contains("check") || el.classList.contains("gate"); }
+function gateId(el){ return el.dataset.id || el.dataset.check; }
+
+function reveal(){
+  const blocks = $$("section.part > *");
+  let blocked = false, firstHidden = null;
+  blocks.forEach(el => {
+    el.classList.toggle("hidden", blocked);
+    if (!blocked && isGate(el) && !solved.has(gateId(el))) blocked = true;
+  });
+  // sections: hide if their kicker is hidden
+  $$("section.part").forEach(sec => sec.classList.toggle("hidden", sec.firstElementChild.classList.contains("hidden")));
+  // total cell in Part 6
+  $("#wTotalCell").textContent = solved.has("w-total") ? "$562.00" : "?";
+  // continue buttons
+  $$("[data-continue]").forEach(b => { b.disabled = solved.has(b.dataset.continue); b.closest(".gate").classList.toggle("hidden", b.closest(".gate").classList.contains("hidden") || solved.has(b.dataset.continue)); });
+  updateNav();
+}
+
+function updateNav(){
+  const nav = $("#nav"); nav.innerHTML = "";
+  const gates = $$("section.part > *").filter(isGate);
+  const doneCount = gates.filter(g => solved.has(gateId(g))).length;
+  $("#bar").style.width = (100 * doneCount / gates.length) + "%";
+  $$("section.part").forEach((sec, i) => {
+    const a = document.createElement("a"); a.href = "#" + sec.id; a.textContent = i; a.title = sec.dataset.title;
+    const g = $$(":scope > *", sec).filter(isGate);
+    if (sec.classList.contains("hidden")) a.className = "locked";
+    else if (g.length && g.every(x => solved.has(gateId(x)))) a.className = "done";
+    nav.appendChild(a);
+  });
+}
+
+/* ---------- grid tool (Part 3) ---------- */
+function gridTool(){
+  let nL = 2, nS = 2;
+  const uL = WS.uL, uW = WS.uW;
+  function draw(){
+    $("#nLong").textContent = nL; $("#nShort").textContent = nS;
+    $("#gridsvg").innerHTML = planSVG(14, 10, {edge:true, show:"both", nLong:nL, nShort:nS, maxW:440, maxH:260});
+    const gL = uW * 12 / (nL - 1), gS = uL * 12 / (nS - 1);
+    const okL = gL <= 24 + 1e-9, okS = gS <= 24 + 1e-9;
+    const minL = (nL - 2 >= 1) && (uW * 12 / (nL - 2) <= 24 + 1e-9);
+    const minS = (nS - 2 >= 1) && (uL * 12 / (nS - 2) <= 24 + 1e-9);
+    const txt = (g, ok, extra) => `Gap between bars: <b>${r2(g)} in.</b> ${ok ? (extra ? "✓ OK, but you could use fewer bars" : "✓ fewest bars that work") : "✗ more than 24 in."}`;
+    const elL = $("#gapLong"), elS = $("#gapShort");
+    elL.innerHTML = txt(gL, okL, minL); elL.className = "gap " + (okL ? "ok" : "no");
+    elS.innerHTML = txt(gS, okS, minS); elS.className = "gap " + (okS ? "ok" : "no");
+  }
+  $$("[data-step]").forEach(b => b.addEventListener("click", () => {
+    const [which, d] = b.dataset.step.split(":");
+    if (which === "long") nL = Math.min(14, Math.max(2, nL + +d)); else nS = Math.min(14, Math.max(2, nS + +d));
+    draw();
+  }));
+  draw();
+}
+
+/* ---------- practice (Part 7) ---------- */
+let practiceCount = 0;
+function rnd(a, b){ return a + Math.random() * (b - a); }
+function vary(base, cents = true){ const v = base * rnd(0.85, 1.15); return cents ? Math.round(v * 100) / 100 : Math.round(v); }
+function newPad(){
+  let L, W;
+  do { L = 8 + Math.floor(Math.random() * 17) / 2; W = 8 + Math.floor(Math.random() * 17) / 2; } while (L === W);
+  if (W > L) [L, W] = [W, L];
+  const T = Math.random() < 0.25 ? 6 : 4;
+  const boards = {}; const base = {8:6.8, 10:8.5, 12:10.25, 14:12.5, 16:14.5}; const f = rnd(0.85, 1.15);
+  for (const k of STOCK) boards[k] = Math.round(base[k] * f * 100) / 100;
+  return {L, W, T, conc: vary(165, false), rebar: vary(9.5), boards};
+}
+
+function practiceSteps(pad, S){
+  const Ls = ftin(pad.L), Ws = ftin(pad.W), uLs = ftinDec(S.uL), uWs = ftinDec(S.uW);
+  const steps = [
+    {id:"ft3", q:`What's the volume of the pad in cubic feet? (Round to 2 decimal places.)`, inputs:[{unit:"ft³"}], ans:[S.ft3], tol:Math.max(0.06, pad.L*pad.W*0.0004), fb:fbFor("ft3",pad,S),
+      how:`${pad.L} × ${pad.W} × ${pad.T}/12 = <b>${r2(S.ft3)} ft³</b>`},
+    {id:"yd3", q:"What's the volume in cubic yards? (Round to 2 decimal places.)", inputs:[{unit:"yd³"}], ans:[S.yd3], tol:0.01, fb:fbFor("yd3",pad,S),
+      how:`${r2(S.ft3)} ÷ 27 = <b>${r2(S.yd3)} yd³</b>`},
+    {id:"order", q:"How much concrete should you order?", inputs:[{unit:"yd³"}], ans:[S.order], tol:0.001, fb:fbFor("order",pad,S),
+      how:`Round ${r2(S.yd3)} up to the next ½ yd³ step: <b>${S.order.toFixed(1)} yd³</b>`},
+    {id:"conc", q:"What's the concrete cost?", inputs:[{pre:"$"}], ans:[S.concCost], tol:0.011, fb:fbFor("conc",pad,S),
+      how:`${S.order.toFixed(1)} × ${money(pad.conc)} = <b>${money(S.concCost)}</b>`},
+    {id:"usable", q:"What's the usable area for the rebar? (Answer in feet.)", inputs:[{unit:"ft", aria:"short side"},{unit:"ft", aria:"long side"}], ans:[S.uW, S.uL], tol:0.01, unordered:true, fb:fbFor("usable",pad,S),
+      how:`${pad.W} − 0.5 = ${S.uW} ft and ${pad.L} − 0.5 = ${S.uL} ft`},
+    {id:"nlong", q:`How many bars run the long way (parallel to the ${Ls} side)?`, inputs:[{unit:"bars"}], ans:[S.nLong], tol:0.01, fb:fbFor("bars",pad,S)(S.uW, S.spLong),
+      how:`Spaced across ${S.uW} ft: ${S.uW} ÷ 2 = ${r2(S.uW/2)} → ${S.spLong} spaces → <b>${S.nLong} bars</b>`},
+    {id:"nshort", q:`How many bars run the short way (parallel to the ${Ws} side)?`, inputs:[{unit:"bars"}], ans:[S.nShort], tol:0.01, fb:fbFor("bars",pad,S)(S.uL, S.spShort),
+      how:`Spaced across ${S.uL} ft: ${S.uL} ÷ 2 = ${r2(S.uL/2)} → ${S.spShort} spaces → <b>${S.nShort} bars</b>`},
+    {id:"pieces", q:"How many 10 ft pieces of rebar do you need in total?", inputs:[{unit:"pieces"}], ans:[S.pieces], tol:0.01, fb:fbFor("pieces",pad,S),
+      how:`Long-way runs are ${S.uL} ft → ${S.pLong} piece${S.pLong>1?"s":""} each: ${S.nLong} × ${S.pLong} = ${S.nLong*S.pLong}<br>Short-way runs are ${S.uW} ft → ${S.pShort} piece${S.pShort>1?"s":""} each: ${S.nShort} × ${S.pShort} = ${S.nShort*S.pShort}<br>Total: <b>${S.pieces} pieces</b>`}
+  ];
+  if (S.uL > 10){
+    steps.push({id:"second", q:`For a ${S.uL} ft run, how long is the piece you cut from the second bar?`, inputs:[{unit:"ft"}], ans:[S.uL - 9.5], tol:0.01, fb:fbFor("second",pad,S)(S.uL),
+      how:`${S.uL} − 10 + 0.5 = <b>${r2(S.uL - 9.5)} ft</b>`});
+  }
+  steps.push(
+    {id:"rebarcost", q:"What's the rebar cost?", inputs:[{pre:"$"}], ans:[S.rebarCost], tol:0.011, fb:fbFor("rebarcost",pad,S),
+      how:`${S.pieces} × ${money(pad.rebar)} = <b>${money(S.rebarCost)}</b>`},
+    {id:"forms", q:"What's the total cost of the form boards?", inputs:[{pre:"$"}], ans:[S.formCost], tol:0.011, fb:fbFor("forms",pad,S),
+      how:`${Ws} sides → 2 × ${S.bW} ft boards; ${Ls} sides → 2 × ${S.bL} ft boards<br>2 × ${money(pad.boards[S.bW])} + 2 × ${money(pad.boards[S.bL])} = <b>${money(S.formCost)}</b>`},
+    {id:"total", q:"What's the total cost of the estimate?", inputs:[{pre:"$"}], ans:[S.total], tol:0.011, fb:fbFor("total",pad,S),
+      how:`${money(S.concCost)} + ${money(S.rebarCost)} + ${money(S.formCost)} = <b>${money(S.total)}</b>`},
+    {id:"pct", q:"What percentage of the total cost is the rebar? (Round to the nearest whole percent.)", inputs:[{unit:"%"}], ans:[S.pct], tol:0.6, fb:fbFor("pct",pad,S),
+      how:`${money(S.rebarCost)} ÷ ${money(S.total)} = ${(S.pct/100).toFixed(3)} → <b>${Math.round(S.pct)}%</b>`}
+  );
+  return steps;
+}
+
+function startPractice(){
+  const pad = newPad(), Sx = solve(pad);
+  const box = $("#practice"); box.innerHTML = "";
+  const card = document.createElement("div"); card.className = "padcard";
+  const usedBoards = [...new Set([Sx.bW, Sx.bL])];
+  card.innerHTML = `<div>Pad: <b>${ftin(pad.W)} × ${ftin(pad.L)}</b>, <b>${pad.T} in.</b> thick</div>
+    <div class="pricelist">
+      <span class="price">Concrete: <b>${money(pad.conc)} per yd³</b></span>
+      <span class="price">#4 rebar: <b>${money(pad.rebar)} per 10 ft piece</b></span>
+      ${STOCK.map(k => `<span class="price">2×6×${k}: <b>${money(pad.boards[k])}</b></span>`).join("")}
+    </div>`;
+  box.appendChild(card);
+  const fig = document.createElement("figure");
+  fig.innerHTML = `<div class="pplan">${planSVG(pad.L, pad.W, {maxW:380, maxH:220})}</div>`;
+  box.appendChild(fig);
+  const steps = practiceSteps(pad, Sx);
+  const els = steps.map((st, i) => {
+    const d = document.createElement("div"); box.appendChild(d);
+    mountCheck(d, Object.assign({tag:`Step ${i+1} of ${steps.length}`}, st), () => advance(i));
+    if (i > 0) d.classList.add("hidden");
+    return d;
+  });
+  const done = document.createElement("div"); done.className = "donebox hidden";
+  box.appendChild(done);
+  const again = document.createElement("div"); again.className = "gatebox";
+  again.innerHTML = `<button class="big" id="newpad">New pad ↻</button>`;
+  box.appendChild(again);
+  $("#newpad").addEventListener("click", () => { startPractice(); $("#p7").scrollIntoView(); });
+  function advance(i){
+    // after both bar counts are answered, draw the rebar grid on the plan
+    if (steps[i].id === "nshort") {
+      $(".pplan", box).innerHTML = planSVG(pad.L, pad.W, {edge:true, show:"both", nLong:Sx.nLong, nShort:Sx.nShort, laps:false, maxW:380, maxH:220, thin:true});
+    }
+    if (i + 1 < els.length) { els[i+1].classList.remove("hidden"); const inp = $("input", els[i+1]); if (inp) inp.focus({preventScroll:false}); }
+    else {
+      practiceCount++;
+      done.classList.remove("hidden");
+      done.innerHTML = `🎉 Pad complete! You've finished ${practiceCount} practice pad${practiceCount>1?"s":""} this session. Try another, or move on to Part 8.`;
+      if (!solved.has("practice-done")) markSolved("practice-done");
+    }
+  }
+}
+
+/* ---------- boot ---------- */
+renderStatic();
+$$("[data-check]").forEach(el => {
+  const id = el.dataset.check, cfg = Object.assign({id}, CHECKS[id]);
+  mountCheck(el, cfg, markSolved, solved.has(id));
+});
+$$("[data-continue]").forEach(b => b.addEventListener("click", () => {
+  markSolved(b.dataset.continue);
+  const sec = b.closest("section.part").nextElementSibling; if (sec) sec.scrollIntoView();
+}));
+$("#reset").addEventListener("click", () => {
+  if (!confirm("Start the tutorial over? Your progress will be cleared.")) return;
+  try { localStorage.removeItem(KEY); } catch(e){}
+  location.reload();
+});
+gridTool();
+startPractice();
+reveal();
+})();
+</script>
+</body>
+</html>
