@@ -229,23 +229,30 @@
 <section class="part" id="p4" data-title="Rebar Pieces and Laps">
   <p class="kicker">Part 4</p>
   <h2>Rebar Pieces and Laps</h2>
-  <p>Rebar comes in <b>10 ft lengths</b>. Some of the bars you just counted are longer than that.</p>
+  <p>Rebar comes in <b>10 ft lengths</b>. Some of the bar runs you just counted are longer than that.</p>
   <ul>
-    <li><b>If a bar run is 10 ft or less</b>, one piece of rebar covers it.</li>
-    <li><b>If a bar run is longer than 10 ft</b>, you need a second piece. The two pieces overlap by <b>6 inches</b> and are wired together. This overlap is called a <b>lap</b>, and it lets the two pieces act like one bar.</li>
+    <li><b>If a bar run is 10 ft or less</b>, one 10 ft bar covers it.</li>
+    <li><b>If a bar run is longer than 10 ft</b>, you need a full 10 ft bar plus a cut piece. The two overlap by <b>6 inches</b> and are wired together. This overlap is called a <b>lap</b>, and it lets the two pieces act like one bar.</li>
   </ul>
-  <figure><div data-svg="lap"></div><figcaption>A 13.5 ft run: one full 10 ft piece plus a cut piece, lapped 6 in.</figcaption></figure>
-  <h3>Step 7: Count the pieces.</h3>
-  <p><b style="color:var(--steel)">Runs the short way (9.5 ft):</b> each fits in one piece → 8 runs × 1 = <b>8 pieces</b><br>
-  <b style="color:var(--rust)">Runs the long way (13.5 ft):</b> each needs two pieces → 6 runs × 2 = <b>12 pieces</b></p>
-  <div class="check" data-check="w-pieces"></div>
-  <h3>Step 8: How long is the second piece?</h3>
-  <p>The first piece covers 10 ft. The second piece covers the rest of the run, plus the 6 in. lap.</p>
+  <figure><div data-svg="lap"></div><figcaption>A 13.5 ft run: one full 10 ft bar plus a 4 ft cut piece, lapped 6 in.</figcaption></figure>
+  <h3>Step 7: How long is the cut piece?</h3>
+  <p>The full bar covers 10 ft. The cut piece covers the rest of the run, plus the 6 in. lap.</p>
+  <p><span class="formula">Cut length = run − 10 + 0.5</span></p>
   <div class="check" data-check="w-second"></div>
-  <p>That leaves a 6 ft leftover from every second bar.</p>
-  <div class="callout think"><p><b>Think about it:</b> Six runs each leave a 6 ft scrap, which is 36 ft of rebar left over. Could any of those pieces be used somewhere else on the pad? Would that change how many bars you need to buy? Keep this question in mind for your shed estimate.</p></div>
-  <h3>Step 9: Rebar cost.</h3>
-  <p><span class="price">Example price: <b>$9.50 per 10 ft piece</b> of #4 rebar</span></p>
+  <h3>Step 8: Cut from as few bars as possible.</h3>
+  <p>You don't need a whole new bar for every cut piece. Get as many cut pieces as you can out of each 10 ft bar:</p>
+  <ul>
+    <li>Pieces per bar = 10 ÷ cut length, <b>rounded down</b> (you can't use part of a piece)</li>
+    <li>Bars for cut pieces = number of cut pieces ÷ pieces per bar, <b>rounded up</b></li>
+  </ul>
+  <p>For the example pad: 10 ÷ 4 = 2.5 → <b>2 pieces per bar</b>, with 2 ft left over.</p>
+  <div class="check" data-check="w-cutbars"></div>
+  <h3>Step 9: Count the bars.</h3>
+  <p><b style="color:var(--steel)">Runs the short way (9.5 ft):</b> each fits in one bar → 8 runs × 1 = <b>8 bars</b><br>
+  <b style="color:var(--rust)">Runs the long way (13.5 ft):</b> 6 full bars + 3 bars for the cut pieces = <b>9 bars</b></p>
+  <div class="check" data-check="w-pieces"></div>
+  <h3>Step 10: Rebar cost.</h3>
+  <p><span class="price">Example price: <b>$9.50 per 10 ft bar</b> of #4 rebar</span></p>
   <div class="check" data-check="w-rebarcost"></div>
 </section>
 
@@ -258,14 +265,14 @@
   <h3>Wait, why a 2×6 for a 4 in. slab?</h3>
   <p>Lumber names are <i>nominal</i> sizes, not the real measurements. A "2×4" is actually 1½ in. × 3½ in., which is too short for a 4 in. slab. A 2×6 is actually 1½ in. × 5½ in., so it gets ripped (cut lengthwise) down to 4 in.</p>
   <figure><div data-svg="lumber"></div><figcaption>End views, drawn to scale</figcaption></figure>
-  <h3>Step 10: Pick the boards.</h3>
+  <h3>Step 11: Pick the boards.</h3>
   <p>2×6 boards are sold in 8, 10, 12, 14, and 16 ft lengths. For each side, pick the shortest board that's at least as long as that side. If a side isn't a stock length, buy the next size up and cut it.</p>
   <p>The example pad needs:</p>
   <ul>
     <li>2 boards for the 10 ft sides → 2 × 10 ft</li>
     <li>2 boards for the 14 ft sides → 2 × 14 ft</li>
   </ul>
-  <h3>Step 11: Form cost.</h3>
+  <h3>Step 12: Form cost.</h3>
   <p><span class="price">Example prices: <b>2×6×10 = $8.50</b>, <b>2×6×14 = $12.50</b></span></p>
   <div class="check" data-check="w-forms"></div>
 </section>
@@ -279,7 +286,7 @@
     <thead><tr><th>Material</th><th>Size/Description</th><th>Quantity</th><th>Unit Cost</th><th>Cost</th></tr></thead>
     <tbody>
       <tr><td>Concrete</td><td>10 ft × 14 ft × 4 in.</td><td>2.0 yd<sup>3</sup></td><td class="num">$165.00</td><td class="num">$330.00</td></tr>
-      <tr><td>Steel</td><td>#4 (½ in. × 10 ft)</td><td>20</td><td class="num">$9.50</td><td class="num">$190.00</td></tr>
+      <tr><td>Steel</td><td>#4 (½ in. × 10 ft)</td><td>17</td><td class="num">$9.50</td><td class="num">$161.50</td></tr>
       <tr><td>Forms</td><td>2×6 – 10 ft</td><td>2</td><td class="num">$8.50</td><td class="num">$17.00</td></tr>
       <tr><td>Forms</td><td>2×6 – 14 ft</td><td>2</td><td class="num">$12.50</td><td class="num">$25.00</td></tr>
       <tr class="total"><td>Total</td><td></td><td></td><td></td><td class="num" id="wTotalCell">?</td></tr>
@@ -287,7 +294,7 @@
   </table></div>
   <div class="check" data-check="w-total"></div>
   <div class="check" data-check="w-pct"></div>
-  <div class="callout think"><p>That's more than a third of the cost. Remember the scrap question from Part 4.</p></div>
+  <div class="callout think"><p>That's nearly a third of the cost. Without cutting smart in Step 8, you'd have bought 3 extra bars.</p></div>
   <div class="gatebox gate" data-id="to-practice"><button class="big" data-continue="to-practice">On to practice →</button></div>
 </section>
 
@@ -345,13 +352,22 @@ function solve(pad){
   const spShort = Math.ceil(uL / 2 - 1e-9), nShort = spShort + 1;  // bars parallel to W, spaced across uL
   const per = run => run <= 10 + 1e-9 ? 1 : 2;
   const pLong = per(uL), pShort = per(uW);
-  const pieces = nLong * pLong + nShort * pShort;
+  // cut pieces: run longer than 10 ft = full bar + cut piece (run - 10 + 0.5 lap); cut pieces packed per direction
+  const cutInfo = (run, n) => {
+    if (run <= 10 + 1e-9) return {cut:0, perBar:0, cutBars:0};
+    const cut = r2(run - 9.5), perBar = Math.floor(10 / cut + 1e-9);
+    return {cut, perBar, cutBars: Math.ceil(n / perBar - 1e-9)};
+  };
+  const cL = cutInfo(uL, nLong), cS = cutInfo(uW, nShort);
+  const barsLong = nLong + cL.cutBars, barsShort = nShort + cS.cutBars;
+  const pieces = barsLong + barsShort;
+  const naive = nLong * pLong + nShort * pShort;   // one bar per cut piece (old PLTW method)
   const rebarCost = r2(pieces * pad.rebar);
   const bL = STOCK.find(s => s >= L - 1e-9), bW = STOCK.find(s => s >= W - 1e-9);
   const formCost = r2(2 * pad.boards[bL] + 2 * pad.boards[bW]);
   const total = r2(concCost + rebarCost + formCost);
   const pct = rebarCost / total * 100;
-  return {ft3, yd3, order, concCost, uL, uW, spLong, nLong, spShort, nShort, pLong, pShort, pieces, rebarCost, bL, bW, formCost, total, pct};
+  return {ft3, yd3, order, concCost, uL, uW, spLong, nLong, spShort, nShort, pLong, pShort, cL, cS, barsLong, barsShort, naive, pieces, rebarCost, bL, bW, formCost, total, pct};
 }
 
 /* ---------- SVG drawings (flat, plan/elevation only) ---------- */
@@ -430,8 +446,8 @@ function lapSVG(){
   o += `<line x1="${x0}" y1="${y}" x2="${x0+10*s}" y2="${y}" stroke="${C.rust}" stroke-width="6" stroke-linecap="round"/>`;
   o += `<line x1="${x0+9.5*s}" y1="${y+8}" x2="${x0+13.5*s}" y2="${y+8}" stroke="${C.rust}" stroke-width="6" stroke-linecap="round" opacity=".75"/>`;
   for (const t of [9.6, 9.75, 9.9]) o += `<line x1="${x0+t*s}" y1="${y-6}" x2="${x0+t*s}" y2="${y+14}" stroke="${C.ink}" stroke-width="1.5"/>`;
-  o += `<text x="${x0+5*s}" y="${y-14}" text-anchor="middle" font-size="14" font-weight="700" fill="${C.ink}">Piece 1: full 10 ft bar</text>`;
-  o += `<text x="${x0+12*s}" y="${y-14}" text-anchor="middle" font-size="14" font-weight="700" fill="${C.ink}">Piece 2: cut to fit</text>`;
+  o += `<text x="${x0+5*s}" y="${y-14}" text-anchor="middle" font-size="14" font-weight="700" fill="${C.ink}">Full 10 ft bar</text>`;
+  o += `<text x="${x0+12*s}" y="${y-14}" text-anchor="middle" font-size="14" font-weight="700" fill="${C.ink}">Cut piece: 4 ft</text>`;
   o += `<text x="${x0+9.75*s}" y="${y+34}" text-anchor="middle" font-size="12" fill="${C.muted}">wire ties</text>`;
   // lap dim
   o += `<g stroke="${C.ink}"><line x1="${x0+9.5*s}" y1="${y-34}" x2="${x0+10*s}" y2="${y-34}"/><line x1="${x0+9.5*s}" y1="${y-40}" x2="${x0+9.5*s}" y2="${y-28}"/><line x1="${x0+10*s}" y1="${y-40}" x2="${x0+10*s}" y2="${y-28}"/></g>`;
@@ -559,13 +575,19 @@ function fbFor(kind, pad, S){
       [v => near(v[0], Math.floor(span/2) + 1, 0.01) && Math.floor(span/2) !== spaces, "Rounding down would put the bars more than 24 in. apart. Round the spaces up."],
       [v => near(v[0], Math.ceil((span+0.5)/2 - 1e-9) + 1, 0.01) && Math.ceil((span+0.5)/2 - 1e-9) !== spaces, "Did you use the usable distance? Take the 3 in. edge distance off both sides first."]];
     case "pieces": return [
-      [v => near(v[0], S.nLong + S.nShort, 0.01) && S.pieces !== S.nLong + S.nShort, "That's one piece per bar. Any run longer than 10 ft needs a second piece."],
-      [v => near(v[0], 2*(S.nLong + S.nShort), 0.01), "Only runs longer than 10 ft need two pieces. Runs of 10 ft or less fit in one."]];
+      [v => near(v[0], S.naive, 0.01) && S.naive !== S.pieces, "That's one bar for every cut piece. How many cut pieces can you get from one 10 ft bar?"],
+      [v => near(v[0], S.nLong + S.nShort, 0.01) && S.pieces !== S.nLong + S.nShort, "That's one bar per run. Runs longer than 10 ft also need cut pieces."],
+      [v => near(v[0], 2*(S.nLong + S.nShort), 0.01), "Only runs longer than 10 ft need a cut piece. Runs of 10 ft or less fit in one bar."]];
     case "second": return (run) => [
-      [v => near(v[0], run - 10, 0.01), "Don't forget the lap. The second piece has to overlap the first by 6 in. (0.5 ft)."],
-      [v => near(v[0], run - 10.5, 0.01), "The lap makes the second piece longer, not shorter. Add 0.5 ft."]];
+      [v => near(v[0], run - 10, 0.01), "Don't forget the lap. The cut piece has to overlap the full bar by 6 in. (0.5 ft)."],
+      [v => near(v[0], run - 10.5, 0.01), "The lap makes the cut piece longer, not shorter. Add 0.5 ft."]];
+    case "cutbars": return (c, n) => [
+      [v => near(v[0], n, 0.01), `That's one bar for each cut piece. How many ${r2(c.cut)} ft pieces fit in one 10 ft bar?`],
+      [v => near(v[0], n / (10 / c.cut), 0.05) && Math.abs(n / (10 / c.cut) - c.cutBars) > 0.05, "You can only use whole pieces. Round the pieces per bar <i>down</i>, then round the bars <i>up</i>."],
+      [v => near(v[0], Math.floor(n / c.perBar), 0.01) && Math.floor(n / c.perBar) !== c.cutBars, "That leaves you short a piece. Round the number of bars <i>up</i>."]];
     case "rebarcost": return [
-      [v => near(v[0], (S.nLong + S.nShort) * pad.rebar, 0.02) && S.pieces !== S.nLong + S.nShort, "Use the total number of <i>pieces</i> (including second pieces), not the number of bar runs."]];
+      [v => near(v[0], S.naive * pad.rebar, 0.02) && S.naive !== S.pieces, "Use your bar count from the last step, with the cut pieces shared between bars."],
+      [v => near(v[0], (S.nLong + S.nShort) * pad.rebar, 0.02) && S.pieces !== S.nLong + S.nShort, "Use the total number of 10 ft bars (including the bars for cut pieces), not the number of runs."]];
     case "forms": return [
       [v => near(v[0], pad.boards[S.bL] + pad.boards[S.bW], 0.02), "That's only two boards. A pad has four sides: two of each length."]];
     case "total": return [
@@ -593,18 +615,20 @@ const CHECKS = {
       [v => near(v[0], 7, 0.01), "You may have counted spaces, or rounded down. Bars = spaces + 1, and spaces always round <i>up</i>."],
       [v => near(v[0], 6, 0.01), "That's the count for the bars running the <i>long</i> way. The short-way bars are spaced across 13.5 ft."]],
     how:"13.5 ÷ 2 = 6.75 → 7 spaces → <b>8 bars</b>, each 9.5 ft long", ok:"Correct! 13.5 ÷ 2 = 6.75 → 7 spaces → 8 bars, each 9.5 ft long."},
-  "w-pieces": {q:"How many 10 ft pieces of rebar do you need in total?", inputs:[{unit:"pieces"}], ans:[S.pieces], tol:0.01, fb:fbFor("pieces",P,S),
-    how:"8 + 12 = <b>20 pieces</b>"},
-  "w-second": {q:"For a 13.5 ft run, how long is the piece you cut from the second bar?", inputs:[{unit:"ft"}], ans:[4], tol:0.01, fb:fbFor("second",P,S)(13.5),
+  "w-second": {q:"For a 13.5 ft run, how long is the cut piece?", inputs:[{unit:"ft"}], ans:[S.cL.cut], tol:0.01, fb:fbFor("second",P,S)(13.5),
     how:"13.5 − 10 + 0.5 = <b>4 ft</b>"},
+  "w-cutbars": {q:"You need six 4 ft cut pieces. How many 10 ft bars do you need to cut them from?", inputs:[{unit:"bars"}], ans:[S.cL.cutBars], tol:0.01, fb:fbFor("cutbars",P,S)(S.cL, S.nLong),
+    how:"10 ÷ 4 = 2.5 → 2 pieces per bar. 6 ÷ 2 = <b>3 bars</b>"},
+  "w-pieces": {q:"How many 10 ft bars of rebar do you need in total?", inputs:[{unit:"bars"}], ans:[S.pieces], tol:0.01, fb:fbFor("pieces",P,S),
+    how:"8 + 9 = <b>17 bars</b>"},
   "w-rebarcost": {q:"What's the rebar cost?", inputs:[{pre:"$"}], ans:[S.rebarCost], tol:0.011, fb:fbFor("rebarcost",P,S),
-    how:"20 × $9.50 = <b>$190.00</b>"},
+    how:"17 × $9.50 = <b>$161.50</b>"},
   "w-forms": {q:"What's the total cost of the form boards?", inputs:[{pre:"$"}], ans:[S.formCost], tol:0.011, fb:fbFor("forms",P,S),
     how:"2 × $8.50 + 2 × $12.50 = $17.00 + $25.00 = <b>$42.00</b>"},
   "w-total": {q:"What's the total cost of the estimate?", inputs:[{pre:"$"}], ans:[S.total], tol:0.011, fb:fbFor("total",P,S),
-    how:"$330.00 + $190.00 + $17.00 + $25.00 = <b>$562.00</b>"},
+    how:"$330.00 + $161.50 + $17.00 + $25.00 = <b>$533.50</b>"},
   "w-pct": {q:"What percentage of the total cost is the rebar? (Round to the nearest whole percent.)", inputs:[{unit:"%"}], ans:[S.pct], tol:0.6, fb:fbFor("pct",P,S),
-    how:"$190 ÷ $562 = 0.338 → <b>34%</b>"}
+    how:"$161.50 ÷ $533.50 = 0.303 → <b>30%</b>"}
 };
 
 /* ---------- progress / gating ---------- */
@@ -628,7 +652,7 @@ function reveal(){
   // sections: hide if their kicker is hidden
   $$("section.part").forEach(sec => sec.classList.toggle("hidden", sec.firstElementChild.classList.contains("hidden")));
   // total cell in Part 6
-  $("#wTotalCell").textContent = solved.has("w-total") ? "$562.00" : "?";
+  $("#wTotalCell").textContent = solved.has("w-total") ? "$533.50" : "?";
   // continue buttons
   $$("[data-continue]").forEach(b => { b.disabled = solved.has(b.dataset.continue); b.closest(".gate").classList.toggle("hidden", b.closest(".gate").classList.contains("hidden") || solved.has(b.dataset.continue)); });
   updateNav();
@@ -703,13 +727,19 @@ function practiceSteps(pad, S){
       how:`Spaced across ${S.uW} ft: ${S.uW} ÷ 2 = ${r2(S.uW/2)} → ${S.spLong} spaces → <b>${S.nLong} bars</b>`},
     {id:"nshort", q:`How many bars run the short way (parallel to the ${Ws} side)?`, inputs:[{unit:"bars"}], ans:[S.nShort], tol:0.01, fb:fbFor("bars",pad,S)(S.uL, S.spShort),
       how:`Spaced across ${S.uL} ft: ${S.uL} ÷ 2 = ${r2(S.uL/2)} → ${S.spShort} spaces → <b>${S.nShort} bars</b>`},
-    {id:"pieces", q:"How many 10 ft pieces of rebar do you need in total?", inputs:[{unit:"pieces"}], ans:[S.pieces], tol:0.01, fb:fbFor("pieces",pad,S),
-      how:`Long-way runs are ${S.uL} ft → ${S.pLong} piece${S.pLong>1?"s":""} each: ${S.nLong} × ${S.pLong} = ${S.nLong*S.pLong}<br>Short-way runs are ${S.uW} ft → ${S.pShort} piece${S.pShort>1?"s":""} each: ${S.nShort} × ${S.pShort} = ${S.nShort*S.pShort}<br>Total: <b>${S.pieces} pieces</b>`}
   ];
-  if (S.uL > 10){
-    steps.push({id:"second", q:`For a ${S.uL} ft run, how long is the piece you cut from the second bar?`, inputs:[{unit:"ft"}], ans:[S.uL - 9.5], tol:0.01, fb:fbFor("second",pad,S)(S.uL),
-      how:`${S.uL} − 10 + 0.5 = <b>${r2(S.uL - 9.5)} ft</b>`});
-  }
+  // cut pieces, one direction at a time (long way first)
+  [["long", S.uL, S.nLong, S.cL, "long-way"], ["short", S.uW, S.nShort, S.cS, "short-way"]].forEach(([dir, run, n, c, label]) => {
+    if (run <= 10) return;
+    steps.push(
+      {id:"second-"+dir, q:`The ${label} runs are ${run} ft. How long is each cut piece?`, inputs:[{unit:"ft"}], ans:[c.cut], tol:0.01, fb:fbFor("second",pad,S)(run),
+        how:`${run} − 10 + 0.5 = <b>${c.cut} ft</b>`},
+      {id:"cutbars-"+dir, q:`You need ${n} cut pieces that are ${c.cut} ft long. How many 10 ft bars do you need to cut them from?`, inputs:[{unit:"bars"}], ans:[c.cutBars], tol:0.01, fb:fbFor("cutbars",pad,S)(c, n),
+        how:`10 ÷ ${c.cut} = ${r2(10/c.cut)} → ${c.perBar} piece${c.perBar>1?"s":""} per bar. ${n} ÷ ${c.perBar} = ${r2(n/c.perBar)} → <b>${c.cutBars} bars</b>`});
+  });
+  const line = (label, run, n, c) => run <= 10 ? `${label} runs (${run} ft) fit in one bar each: <b>${n}</b>` : `${label} runs (${run} ft): ${n} full bars + ${c.cutBars} bars for cut pieces = <b>${n + c.cutBars}</b>`;
+  steps.push({id:"pieces", q:"How many 10 ft bars of rebar do you need in total?", inputs:[{unit:"bars"}], ans:[S.pieces], tol:0.01, fb:fbFor("pieces",pad,S),
+    how:`${line("Long-way", S.uL, S.nLong, S.cL)}<br>${line("Short-way", S.uW, S.nShort, S.cS)}<br>Total: <b>${S.pieces} bars</b>`});
   steps.push(
     {id:"rebarcost", q:"What's the rebar cost?", inputs:[{pre:"$"}], ans:[S.rebarCost], tol:0.011, fb:fbFor("rebarcost",pad,S),
       how:`${S.pieces} × ${money(pad.rebar)} = <b>${money(S.rebarCost)}</b>`},
@@ -731,7 +761,7 @@ function startPractice(){
   card.innerHTML = `<div>Pad: <b>${ftin(pad.W)} × ${ftin(pad.L)}</b>, <b>${pad.T} in.</b> thick</div>
     <div class="pricelist">
       <span class="price">Concrete: <b>${money(pad.conc)} per yd³</b></span>
-      <span class="price">#4 rebar: <b>${money(pad.rebar)} per 10 ft piece</b></span>
+      <span class="price">#4 rebar: <b>${money(pad.rebar)} per 10 ft bar</b></span>
       ${STOCK.map(k => `<span class="price">2×6×${k}: <b>${money(pad.boards[k])}</b></span>`).join("")}
     </div>`;
   box.appendChild(card);
